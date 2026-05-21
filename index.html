@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>منه وإسراء | قصة خمس سنين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-warm: #fef7f0;
+            --bg-soft: #fff5f0;
+            --glass: rgba(255, 245, 240, 0.85);
+            --glass-border: rgba(255, 230, 220, 0.9);
+            --rose: #e8a9b4;
+            --rose-dark: #c2778a;
+            --shadow: 0 20px 35px rgba(0, 0, 0, 0.05);
+            --radius: 2rem;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(145deg, var(--bg-warm), var(--bg-soft));
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* خلفية المشاعر (محسّنة) */
+        .floating-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .floating-item {
+            position: absolute;
+            font-size: 1rem;
+            user-select: none;
+            animation: drift 25s infinite linear;
+            opacity: 0.2;
+        }
+        @keyframes drift {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.3; }
+            80% { opacity: 0.25; }
+            100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* شاشة التحميل */
+        .intro-screen {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 40% 30%, #fff3ea, #ffe6e0);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 1s ease;
+        }
+        .intro-card {
+            background: rgba(255, 250, 245, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 3rem;
+            padding: 2rem 1.8rem;
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.1);
+            animation: softAppear 0.8s ease;
+        }
+        @keyframes softAppear {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .intro-icon {
+            font-size: 3rem;
+            margin-bottom: 0.8rem;
+            animation: gentlePulse 2s infinite;
+        }
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+        .intro-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #c2778a, #e8a9b4);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .intro-message {
+            margin: 1.2rem 0;
+            color: #b57687;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+        .progress-load {
+            width: 100%;
+            height: 4px;
+            background: rgba(200, 120, 140, 0.2);
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+        .progress-fill-intro {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #e8a9b4, #c2778a);
+            transition: width 0.1s linear;
+        }
+
+        /* الكتاب الأفقي */
+        .book-horizontal {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow-x: hidden;
+            perspective: 1200px;
+            z-index: 2;
+        }
+        .pages-container {
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+            width: 100%;
+            transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            will-change: transform;
+            direction: ltr;
+            transform-style: preserve-3d;
+        }
+        .page {
+            min-width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            padding: 1.5rem 1.2rem 2rem;
+            scroll-behavior: smooth;
+            background: rgba(255, 250, 245, 0.3);
+            backdrop-filter: blur(2px);
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+        }
+        .page::-webkit-scrollbar {
+            width: 3px;
+        }
+        .page::-webkit-scrollbar-track {
+            background: rgba(200,120,140,0.2);
+        }
+        .page::-webkit-scrollbar-thumb {
+            background: var(--rose);
+        }
+
+        .memory-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            padding: 1.4rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+        .chapter-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--rose-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.2rem;
+            border-right: 4px solid var(--rose);
+            padding-right: 1rem;
+        }
+        .story-text {
+            font-size: clamp(0.9rem, 4vw, 1.05rem);
+            line-height: 1.7;
+            color: #4a3b3f;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+            min-height: 150px;
+        }
+        /* مؤشر الكتابة */
+        .typewriter-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background-color: var(--rose-dark);
+            vertical-align: middle;
+            margin-right: 2px;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* صورتين أسفل النص */
+        .two-photos {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .mini-photo {
+            flex: 1;
+            background: rgba(255,240,245,0.7);
+            border-radius: 1.2rem;
+            padding: 0.3rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        .mini-photo img {
+            width: 100%;
+            aspect-ratio: 1/1;
+            object-fit: cover;
+            border-radius: 1rem;
+            background: #ffe2ef;
+        }
+        .mini-photo span {
+            font-size: 0.65rem;
+            display: block;
+            margin-top: 0.3rem;
+            color: var(--rose-dark);
+        }
+
+        /* معرض الصور المنفرد (الفصل الأخير) */
+        .cinema-gallery {
+            text-align: center;
+        }
+        .cinema-photo {
+            width: 100%;
+            max-height: 55vh;
+            object-fit: contain;
+            border-radius: 2rem;
+            cursor: pointer;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+            background: #fff2ec;
+        }
+        .photo-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+        .photo-nav-btn {
+            background: rgba(230, 169, 180, 0.2);
+            border: none;
+            font-size: 1.2rem;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            color: var(--rose-dark);
+            cursor: pointer;
+        }
+
+        /* مشغل الموسيقى */
+        .music-mini {
+            background: linear-gradient(145deg, #2a1e28, #1e141c);
+            border-radius: 2rem;
+            padding: 1rem;
+            color: white;
+            margin-top: 1rem;
+        }
+        .track-row {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .track-art img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+        }
+        .control-buttons-mini {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 0.8rem 0;
+        }
+        .control-buttons-mini button {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: white;
+        }
+
+        .surprise-btn {
+            background: linear-gradient(105deg, #ffbccd, #f3add5);
+            border: none;
+            padding: 0.8rem;
+            border-radius: 3rem;
+            font-weight: bold;
+            color: white;
+            margin-top: 1rem;
+            width: 100%;
+            cursor: pointer;
+        }
+        .surprise-card {
+            background: rgba(255,245,240,0.95);
+            border-radius: 1.8rem;
+            padding: 1.2rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+            border: 1px dashed var(--rose);
+        }
+        .surprise-card.show {
+            display: block;
+            animation: fadeSlideUp 0.5s ease;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-indicator {
+            position: fixed;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(194, 119, 138, 0.4);
+            transition: all 0.2s;
+        }
+        .dot.active {
+            width: 24px;
+            border-radius: 10px;
+            background: var(--rose-dark);
+        }
+
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,240,0.6);
+            backdrop-filter: blur(4px);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 15;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rose-dark);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .nav-left { left: 8px; }
+        .nav-right { right: 8px; }
+        @media (min-width: 600px) {
+            .nav-left { left: 15px; }
+            .nav-right { right: 15px; }
+        }
+
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
+            z-index: 3000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .lightbox img {
+            max-width: 90%;
+            max-height: 80%;
+            border-radius: 2rem;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            color: var(--rose-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="floating-bg" id="floatingBg"></div>
+
+<!-- شاشة التحميل -->
+<div class="intro-screen" id="introScreen">
+    <div class="intro-card">
+        <div class="intro-icon">🌸✨</div>
+        <div class="intro-title">أهلًا يا منه 🌸</div>
+        <div class="intro-message">
+            "اللحظات الجاية معمولالك بكل حب…<br>
+            خدي نفس وابتسمي لأن في حد حابب يقولك حاجات من قلبه 🤍"
+        </div>
+        <div class="progress-load"><div class="progress-fill-intro" id="introProgress"></div></div>
+        <div style="font-size:0.75rem; color:#b57687;" id="loadingStatus">بيتجهز الكتاب...</div>
+    </div>
+</div>
+
+<!-- الكتاب الأفقي -->
+<div class="book-horizontal" id="bookHorizontal" style="display: none;">
+    <button class="nav-arrow nav-left" id="prevPageArrow"><i class="fas fa-chevron-right"></i></button>
+    <button class="nav-arrow nav-right" id="nextPageArrow"><i class="fas fa-chevron-left"></i></button>
+    <div class="page-indicator" id="pageIndicator"></div>
+    <div class="pages-container" id="pagesContainer">
+        <!-- الفصل 1: بداية الحكاية + صورتين (صور 1,2) -->
+        <div class="page">
+            <div class="memory-card">
+                <div class="chapter-title"><i class="fas fa-seedling"></i> بداية الحكاية</div>
+                <div class="story-text" id="story1">من تانيه ثانوي… بقالنا خمس سنين 🤍<br><br>خمس سنين من الضحك، الدموع، الأسرار، والأحلام. من أول يوم حسيت إنك مش مجرد زميلة، انتِ كنتِ الأخت اللي اختارها قلبي. كنتِ الشخص اللي بيشوفني على حقيقتي، وبدون ما أحاول أكون مثالية، كنتِ بتحبيني زي ما أنا.</div>
+                <div class="two-photos" id="photos1"></div>
+            </div>
+        </div>
+        <!-- الفصل 2: لما الدنيا شتتنا + صورتين (صور 3,4) -->
+        <div class="page">
+            <div class="memory-card">
+                <div class="chapter-title"><i class="fas fa-heart-broken"></i> لما الدنيا شتتنا</div>
+                <div class="story-text" id="story2">لما بقيت في حياتي، صلحت حاجات كتير كانت ضايعة مني زمان. كنتِ النور اللي خلاني أشوف نفسي بشكل تاني…<br><br>بس بعدين الدنيا غيرتنا، وتهت، معرفتش أعمل صحاب حقيقيين تاني. كنت محتاجاكِ معايا طول الوقت، كنت نفسي تفضلِ جنبي زي زمان. من غيرك حسيت إني وحيدة، حتى لو حواليا ناس كتير. وحشتيني أوي، أوي يا منه.</div>
+                <div class="two-photos" id="photos2"></div>
+            </div>
+        </div>
+        <!-- الفصل 3: شكرًا لأنك كنتِ + صورتين (صور 5,6) -->
+        <div class="page">
+            <div class="memory-card">
+                <div class="chapter-title"><i class="fas fa-hands-helping"></i> شكرًا لأنك كنتِ</div>
+                <div class="story-text" id="story3">عمري ما كان في حياتي حد ارتاح معاه أو يتقبلني زي ما أنا، يحبني كدا من غير سبب. انتِ كنتِ أول حد حسسني إن أنا كفاية، إن أنا جميلة بمزاجي وبعيوبي.<br><br>انتِ كنتِ السبب اللي خلاني أحب نفسي أكتر. كل لحظة قضيناها سوا كانت هدية. أنا ممتنة لكل ضحكة، لكل عناق، لكل ليلة سهرنا نحكي فيها لحد الفجر. 🤍</div>
+                <div class="two-photos" id="photos3"></div>
+            </div>
+        </div>
+        <!-- الفصل 4: دايمًا مع بعض + صورتين (صور 7,8) -->
+        <div class="page">
+            <div class="memory-card">
+                <div class="chapter-title"><i class="fas fa-star-and-crescent"></i> دايمًا مع بعض</div>
+                <div class="story-text" id="story4">ربنا ما يحرمني منك أبدًا. انتِ أجمل حاجة حصلت في حياتي، وهفضل أحبك دايمًا. حتى لو المسافات بعُدت، قلوبنا لسه قريبة.<br><br>وهفضل أفتكر إننا مرة كنا جدعنة صحاب، وإن الصحبة الحقيقية مش بتنتهي. بحبك يا منه، أكتر مما تتخيلي.</div>
+                <div class="two-photos" id="photos4"></div>
+                <button class="surprise-btn" id="surpriseFinalBtn"><i class="fas fa-gift"></i> اضغطي لهدية من قلبي</button>
+                <div id="finalSurpriseCard" class="surprise-card">
+                    <i class="fas fa-heart" style="font-size: 2rem; color:#e8a9b4;"></i>
+                    <p style="margin-top:0.5rem;">🎉 منه يا أجمل صديقة، انتِ معجزة في حياتي. 🤍<br>ربنا يخليكي ليا دايمًا.</p>
+                    <i class="fas fa-smile-wink"></i>
+                </div>
+                <div class="music-mini">
+                    <div class="track-row">
+                        <div class="track-art"><img src="1000313564.jpg" onerror="this.src='https://placehold.co/50x50/e8a9b4/white?text=🎵'"></div>
+                        <div class="track-info"><div class="track-title">أغنية لصديقتي</div></div>
+                    </div>
+                    <div class="control-buttons-mini">
+                        <button id="rewindBtnFinal"><i class="fas fa-backward-step"></i></button>
+                        <button id="playPauseFinal"><i class="fas fa-play"></i></button>
+                        <button id="stopFinal"><i class="fas fa-stop"></i></button>
+                    </div>
+                    <div class="progress-area" style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                        <span id="currentFinal" style="font-size:0.7rem;">0:00</span>
+                        <div style="flex:1; height:3px; background:rgba(255,255,255,0.3); border-radius:5px; cursor:pointer;" id="progressBarFinal"><div id="progressFillFinal" style="width:0%; height:100%; background:#e8a9b4;"></div></div>
+                        <span id="durationFinal" style="font-size:0.7rem;">0:00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer">بـِـحب كبير 🤍 إسراء</div>
+        </div>
+        <!-- الفصل 5: ذكرياتنا (معرض صور منفرد) -->
+        <div class="page">
+            <div class="memory-card">
+                <div class="chapter-title"><i class="fas fa-images"></i> ذكرياتنا</div>
+                <div class="cinema-gallery">
+                    <img id="galleryPhoto" class="cinema-photo" src="images/1.jpg" alt="ذكرى">
+                    <div class="photo-nav">
+                        <button id="prevPhotoBtn" class="photo-nav-btn"><i class="fas fa-chevron-right"></i> السابقة</button>
+                        <span id="photoCounter" style="font-size:0.8rem; color:var(--rose-dark);">1 / 12</span>
+                        <button id="nextPhotoBtn" class="photo-nav-btn">التالية <i class="fas fa-chevron-left"></i></button>
+                    </div>
+                    <p style="font-size:0.7rem; margin-top:0.8rem;">✨ اضغطي على الصورة لتكبيرها ✨</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="lightbox" class="lightbox"><img id="lightboxImg"></div>
+
+<script>
+    (function(){
+        // شاشة التحميل
+        const introScreen = document.getElementById('introScreen');
+        const bookHorizontal = document.getElementById('bookHorizontal');
+        const introProgress = document.getElementById('introProgress');
+        const loadingStatus = document.getElementById('loadingStatus');
+        let prog = 0;
+        const interval = setInterval(() => {
+            prog += Math.random() * 12 + 3;
+            if(prog >= 100) {
+                prog = 100;
+                clearInterval(interval);
+                introProgress.style.width = '100%';
+                loadingStatus.innerText = 'استعدي للرحلة 💫';
+                setTimeout(() => {
+                    introScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        introScreen.style.display = 'none';
+                        bookHorizontal.style.display = 'block';
+                        initBook();
+                        startAllFeatures();
+                    }, 800);
+                }, 600);
+            }
+            introProgress.style.width = prog + '%';
+        }, 180);
+
+        // ---------- التنقل الأفقي ----------
+        let currentPage = 0;
+        const totalPages = 5;
+        const pagesContainer = document.getElementById('pagesContainer');
+        const indicator = document.getElementById('pageIndicator');
+        let touchStartX = 0;
+        let isSwiping = false;
+        let isAnimating = false;
+
+        function updateIndicator() {
+            indicator.innerHTML = '';
+            for(let i=0; i<totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if(i === currentPage) dot.classList.add('active');
+                indicator.appendChild(dot);
+            }
+        }
+
+        function apply3DEffect() {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach((page, i) => {
+                let diff = i - currentPage;
+                let rotate = 0;
+                if(diff === -1) rotate = -5;
+                else if(diff === 1) rotate = 5;
+                page.style.transform = `rotateY(${rotate}deg) translateZ(${diff === 0 ? 10 : 0}px)`;
+            });
+        }
+
+        function goToPage(index) {
+            if(isAnimating) return;
+            if(index < 0) index = 0;
+            if(index >= totalPages) index = totalPages-1;
+            if(index === currentPage) return;
+            isAnimating = true;
+            currentPage = index;
+            pagesContainer.style.transform = `translateX(-${currentPage * 100}%)`;
+            updateIndicator();
+            apply3DEffect();
+            // عند دخول صفحة جديدة، ابدأ كتابة النص إذا لم يبدأ من قبل
+            startTypewriterForPage(currentPage);
+            setTimeout(() => { isAnimating = false; }, 500);
+        }
+
+        function nextPage() { goToPage(currentPage+1); }
+        function prevPage() { goToPage(currentPage-1); }
+
+        pagesContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+            isSwiping = true;
+        });
+        pagesContainer.addEventListener('touchend', (e) => {
+            if(!isSwiping || isAnimating) { isSwiping = false; return; }
+            const endX = e.changedTouches[0].screenX;
+            const diff = endX - touchStartX;
+            if(Math.abs(diff) > 40) {
+                if(diff > 0) prevPage();
+                else nextPage();
+            }
+            isSwiping = false;
+        });
+        pagesContainer.addEventListener('touchmove', (e) => {
+            if(isSwiping && Math.abs(e.changedTouches[0].screenX - touchStartX) > 10) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        const prevArrow = document.getElementById('prevPageArrow');
+        const nextArrow = document.getElementById('nextPageArrow');
+        if(prevArrow) prevArrow.addEventListener('click', prevPage);
+        if(nextArrow) nextArrow.addEventListener('click', nextPage);
+
+        // ---------- تأثير الكتابة التلقائية للفصول الأربعة الأولى ----------
+        const stories = [
+            document.getElementById('story1'),
+            document.getElementById('story2'),
+            document.getElementById('story3'),
+            document.getElementById('story4')
+        ];
+        const originalTexts = stories.map(el => el.innerText);
+        let typewriterStarted = [false, false, false, false];
+        let typewriterIntervals = [];
+
+        function typeText(element, text, index) {
+            element.innerHTML = '';
+            let i = 0;
+            function addChar() {
+                if(i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    typewriterIntervals[index] = setTimeout(addChar, 35);
+                } else {
+                    // إضافة المؤشر الوامض بعد الانتهاء (اختياري)
+                    element.style.borderRight = 'none';
+                }
+            }
+            addChar();
+        }
+
+        function startTypewriterForPage(pageIdx) {
+            if(pageIdx < 4 && !typewriterStarted[pageIdx]) {
+                typewriterStarted[pageIdx] = true;
+                if(stories[pageIdx]) {
+                    typeText(stories[pageIdx], originalTexts[pageIdx], pageIdx);
+                }
+            }
+        }
+
+        // ---------- إضافة صورتين لكل فصل من الفصول الأربعة الأولى ----------
+        const photoPairs = [
+            [1, 2],   // فصل 1
+            [3, 4],   // فصل 2
+            [5, 6],   // فصل 3
+            [7, 8]    // فصل 4
+        ];
+        const photoContainers = [
+            document.getElementById('photos1'),
+            document.getElementById('photos2'),
+            document.getElementById('photos3'),
+            document.getElementById('photos4')
+        ];
+
+        function createMiniPhoto(photoNum, container) {
+            const div = document.createElement('div');
+            div.className = 'mini-photo';
+            const img = document.createElement('img');
+            img.src = `images/${photoNum}.jpg`;
+            img.alt = `صورة ${photoNum}`;
+            img.onerror = () => { img.src = `https://placehold.co/300x300/ffe2ef/e8a9b4?text=${photoNum}`; };
+            const span = document.createElement('span');
+            span.innerText = `لحظة ${photoNum}`;
+            div.appendChild(img);
+            div.appendChild(span);
+            div.addEventListener('click', () => {
+                const lightbox = document.getElementById('lightbox');
+                const lightboxImg = document.getElementById('lightboxImg');
+                lightboxImg.src = img.src;
+                lightbox.style.display = 'flex';
+            });
+            container.appendChild(div);
+        }
+
+        function loadPairPhotos() {
+            for(let i=0; i<photoPairs.length; i++) {
+                const container = photoContainers[i];
+                if(container) {
+                    container.innerHTML = '';
+                    const [p1, p2] = photoPairs[i];
+                    createMiniPhoto(p1, container);
+                    createMiniPhoto(p2, container);
+                }
+            }
+        }
+
+        // ---------- معرض الصور المنفرد (12 صورة) ----------
+        let currentPhoto = 0;
+        const totalPhotos = 12;
+        const galleryPhoto = document.getElementById('galleryPhoto');
+        const prevPhotoBtn = document.getElementById('prevPhotoBtn');
+        const nextPhotoBtn = document.getElementById('nextPhotoBtn');
+        const photoCounterSpan = document.getElementById('photoCounter');
+
+        function updatePhoto() {
+            const photoNum = currentPhoto + 1;
+            galleryPhoto.src = `images/${photoNum}.jpg`;
+            galleryPhoto.alt = `ذكرى ${photoNum}`;
+            photoCounterSpan.innerText = `${photoNum} / ${totalPhotos}`;
+            galleryPhoto.onerror = () => { galleryPhoto.src = `https://placehold.co/500x500/ffe2ef/e8a9b4?text=${photoNum}`; };
+        }
+        function nextPhoto() { currentPhoto = (currentPhoto + 1) % totalPhotos; updatePhoto(); }
+        function prevPhoto() { currentPhoto = (currentPhoto - 1 + totalPhotos) % totalPhotos; updatePhoto(); }
+        if(prevPhotoBtn) prevPhotoBtn.addEventListener('click', prevPhoto);
+        if(nextPhotoBtn) nextPhotoBtn.addEventListener('click', nextPhoto);
+
+        // Lightbox
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightboxImg');
+        if(galleryPhoto) {
+            galleryPhoto.addEventListener('click', () => {
+                lightboxImg.src = galleryPhoto.src;
+                lightbox.style.display = 'flex';
+            });
+        }
+        if(lightbox) lightbox.addEventListener('click', () => lightbox.style.display = 'none');
+
+        // ---------- خلفية عائمة بأداء محسن ----------
+        function createFloatingElements() {
+            const bg = document.getElementById('floatingBg');
+            const icons = ['❤️', '🌸', '🌹', '⭐', '🌼', '💖', '🌷'];
+            const count = 25;
+            for(let i=0; i<count; i++) {
+                let el = document.createElement('div');
+                el.className = 'floating-item';
+                el.innerHTML = icons[Math.floor(Math.random() * icons.length)];
+                el.style.fontSize = (Math.random() * 1.2 + 0.6) + 'rem';
+                el.style.left = Math.random() * 100 + '%';
+                el.style.animationDuration = 18 + Math.random() * 25 + 's';
+                el.style.animationDelay = Math.random() * 20 + 's';
+                el.style.opacity = 0.1 + Math.random() * 0.2;
+                bg.appendChild(el);
+            }
+        }
+        createFloatingElements();
+
+        // ---------- مشغل الموسيقى ----------
+        let audio = null;
+        let isPlaying = false;
+        function initMusic() {
+            audio = new Audio('song.mp3');
+            audio.loop = false;
+            audio.volume = 0.5;
+            const playBtn = document.getElementById('playPauseFinal');
+            const stopBtn = document.getElementById('stopFinal');
+            const rewindBtn = document.getElementById('rewindBtnFinal');
+            const progressBar = document.getElementById('progressBarFinal');
+            const progressFill = document.getElementById('progressFillFinal');
+            const currentSpan = document.getElementById('currentFinal');
+            const durationSpan = document.getElementById('durationFinal');
+
+            function formatTime(sec) { if(isNaN(sec)) return '0:00'; const m = Math.floor(sec/60); const s = Math.floor(sec%60); return `${m}:${s<10?'0':''}${s}`; }
+            function updateProgress() {
+                if(audio.duration) {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progressFill.style.width = percent + '%';
+                    currentSpan.innerText = formatTime(audio.currentTime);
+                    durationSpan.innerText = formatTime(audio.duration);
+                }
+            }
+            function updateIcon() { playBtn.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => { durationSpan.innerText = formatTime(audio.duration); });
+            audio.addEventListener('ended', () => { isPlaying=false; updateIcon(); progressFill.style.width='0%'; currentSpan.innerText='0:00'; });
+            if(playBtn) playBtn.addEventListener('click', () => {
+                if(isPlaying) audio.pause();
+                else audio.play().catch(e => console.error(e));
+                isPlaying = !isPlaying; updateIcon();
+            });
+            if(stopBtn) stopBtn.addEventListener('click', () => { audio.pause(); audio.currentTime=0; isPlaying=false; updateIcon(); updateProgress(); });
+            if(rewindBtn) rewindBtn.addEventListener('click', () => { audio.currentTime=0; updateProgress(); });
+            if(progressBar) progressBar.addEventListener('click', (e) => {
+                const rect = progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                if(audio.duration) audio.currentTime = percent * audio.duration;
+            });
+        }
+
+        // ---------- المفاجأة ----------
+        const surpriseFinalBtn = document.getElementById('surpriseFinalBtn');
+        const finalSurprise = document.getElementById('finalSurpriseCard');
+        if(surpriseFinalBtn) surpriseFinalBtn.addEventListener('click', () => {
+            finalSurprise.classList.add('show');
+            canvasConfetti({ particleCount: 200, spread: 70, origin: { y: 0.5 }, colors: ['#e8a9b4','#f3c4d0','#ffdd99'] });
+            setTimeout(() => canvasConfetti({ particleCount: 300, spread: 100, origin: { y: 0.6, x: 0.2 } }), 150);
+            setTimeout(() => canvasConfetti({ particleCount: 300, spread: 100, origin: { y: 0.4, x: 0.8 } }), 300);
+        });
+
+        function startAllFeatures() {
+            loadPairPhotos();
+            updatePhoto();
+            initMusic();
+            // بدء الكتابة في الصفحة الأولى فقط
+            startTypewriterForPage(0);
+        }
+
+        function initBook() {
+            goToPage(0);
+        }
+    })();
+</script>
+</body>
+</html>
