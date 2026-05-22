@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>مانونتي | سكرابوك الذكريات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&family=Comfortaa:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #ffe6f0 0%, #ffd9e6 100%);
+            font-family: 'Tajawal', 'Comfortaa', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            padding: 16px;
+        }
+
+        /* خلفية وردية مع زهور صغيرة متحركة */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.1"><path fill="%23ff80a5" d="M50,15 L55,30 L70,30 L58,40 L62,55 L50,46 L38,55 L42,40 L30,30 L45,30 Z"/></svg>');
+            background-repeat: repeat;
+            background-size: 35px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ورق ممزق في الزوايا (تأثير scrapbook) */
+        .torn-edge {
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 18px;
+            background: repeating-linear-gradient(45deg, #ffe2d0, #ffe2d0 12px, #ffd6c0 12px, #ffd6c0 24px);
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        /* حاوية الكتاب الرئيسية */
+        .scrapbook-container {
+            position: relative;
+            width: 100%;
+            max-width: 520px;
+            height: 85vh;
+            max-height: 750px;
+            background: rgba(255, 248, 245, 0.85);
+            backdrop-filter: blur(3px);
+            border-radius: 42px;
+            box-shadow: 0 20px 35px rgba(160, 60, 80, 0.25), inset 0 1px 4px rgba(255,255,200,0.8);
+            overflow: hidden;
+            z-index: 10;
+            border: 1px solid rgba(255,210,190,0.7);
+        }
+
+        /* شريط علوي مزخرف */
+        .scrapbook-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 14px;
+            background: repeating-linear-gradient(90deg, #f9b8c8, #f9b8c8 15px, #ffccdd 15px, #ffccdd 30px);
+            border-radius: 42px 42px 0 0;
+            z-index: 15;
+        }
+
+        /* صفحة الكتاب (كارد طويل) */
+        .page-card {
+            height: 100%;
+            width: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 2rem 1.5rem;
+            scroll-behavior: smooth;
+            position: relative;
+            background: #fffef8;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255,200,210,0.1) 2%, transparent 2.5%);
+            background-size: 22px 22px;
+            border-radius: 42px;
+        }
+        .page-card::-webkit-scrollbar {
+            width: 4px;
+        }
+        .page-card::-webkit-scrollbar-track {
+            background: #ffe0ec;
+            border-radius: 10px;
+        }
+        .page-card::-webkit-scrollbar-thumb {
+            background: #e8a9b4;
+            border-radius: 10px;
+        }
+
+        /* إخفاء الصفحات إلا النشطة */
+        .page-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .page-content.active-page {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* أرقام الصفحات بنمط ناعم */
+        .page-number {
+            font-family: 'Amiri', serif;
+            font-size: 0.75rem;
+            text-align: center;
+            color: #e8a9b4;
+            letter-spacing: 3px;
+            margin-bottom: 0.8rem;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        .page-number:before, .page-number:after {
+            content: "❁";
+            color: #f3c6d2;
+            font-size: 0.7rem;
+            margin: 0 6px;
+        }
+
+        /* ستيكرات وورق ممزق داخل الصفحات */
+        .sticker {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.6;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .tape {
+            position: absolute;
+            background: rgba(245,235,210,0.7);
+            width: 70px;
+            height: 22px;
+            transform: rotate(-8deg);
+            border-radius: 30% 10% 30% 10%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            backdrop-filter: blur(2px);
+            z-index: 5;
+        }
+
+        /* صورة البوكيه مع شريط لاصق */
+        .bouquet-frame {
+            position: relative;
+            display: inline-block;
+            width: 80%;
+            margin: 1rem auto;
+            text-align: center;
+        }
+        .polaroid {
+            background: #fffcf5;
+            padding: 10px 10px 18px 10px;
+            border-radius: 8px 18px 18px 8px;
+            box-shadow: 0 12px 20px rgba(0,0,0,0.12);
+            transform: rotate(1deg);
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .polaroid img {
+            width: 100%;
+            max-width: 220px;
+            border-radius: 6px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .tape-sticker {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            background: rgba(255,245,215,0.85);
+            width: 55px;
+            height: 20px;
+            border-radius: 20% 40% 20% 40%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* زر المفاجأة */
+        .btn-surprise {
+            background: linear-gradient(115deg, #f5b0c0, #e88faa);
+            border: none;
+            border-radius: 60px;
+            padding: 12px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            display: inline-block;
+            margin: 1.8rem auto;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(200, 100, 120, 0.3);
+            transition: 0.2s;
+            font-family: 'Tajawal', sans-serif;
+            letter-spacing: 1px;
+        }
+        .btn-surprise:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px rgba(200,100,120,0.4);
+        }
+
+        /* نقاط التنقل */
+        .dot-nav {
+            position: absolute;
+            bottom: 18px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            z-index: 30;
+        }
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: #e8a9b4;
+            border-radius: 50%;
+            opacity: 0.4;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .dot.active {
+            width: 22px;
+            border-radius: 10px;
+            opacity: 1;
+            background: #e88faa;
+        }
+
+        /* أزرار التنقل الجانبية (لامعة) */
+        .nav-arrows {
+            position: absolute;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 28px;
+            z-index: 30;
+        }
+        .nav-btn {
+            background: rgba(255,215,225,0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #f3bbcc;
+            border-radius: 50px;
+            padding: 8px 24px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #b34e6e;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Tajawal', sans-serif;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .nav-btn:hover {
+            background: #e88faa;
+            color: white;
+            border-color: white;
+        }
+
+        /* أيقونة الموسيقى الدائرية أعلى اليمين */
+        .music-icon {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255,235,240,0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #ffbfcf;
+            transition: all 0.2s;
+        }
+        .music-icon i {
+            font-size: 1.3rem;
+            color: #c96f89;
+        }
+        .music-icon.playing i {
+            animation: spin 3s linear infinite;
+            color: #e88faa;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* عناصر قلب ورد متحركة */
+        .floating-heart {
+            position: fixed;
+            font-size: 1rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUp 6s linear forwards;
+            opacity: 0.6;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(-100vh) rotate(20deg); opacity: 0; }
+        }
+
+        /* ثلاث نقاط أنيقة */
+        .three-dots {
+            font-size: 3.5rem;
+            letter-spacing: 12px;
+            color: #e8a9b4;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        /* صندوق الهدية والنص */
+        .gift-message {
+            background: rgba(255,245,240,0.8);
+            border-radius: 32px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            border: 1px dashed #e8a9b4;
+        }
+
+        /* صور البولارويد في صفحات العرض */
+        .polaroid-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+            align-items: center;
+        }
+        .polaroid-card {
+            background: #fffcf0;
+            padding: 10px 10px 18px 10px;
+            border-radius: 12px 20px 12px 20px;
+            transform: rotate(-0.5deg);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+            width: 85%;
+            position: relative;
+        }
+        .polaroid-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .caption {
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 8px;
+            color: #b86b82;
+        }
+        .tape-top {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-3deg);
+            background: rgba(250,240,200,0.9);
+            width: 50px;
+            height: 18px;
+            border-radius: 20% 30% 20% 30%;
+        }
+
+        .reasons-list {
+            list-style: none;
+            padding: 0;
+        }
+        .reasons-list li {
+            background: rgba(232,169,180,0.12);
+            margin: 0.6rem 0;
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        /* نهاية جميلة */
+        .end-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="scrapbook-container">
+    <div class="scrapbook-header"></div>
+    <div class="page-card" id="pageScroll">
+        <!-- الصفحة 1: بوكيه ورد + زر -->
+        <div class="page-content active-page" id="page0">
+            <div class="page-number">الفصل الأول</div>
+            <div style="text-align: center;">
+                <div class="bouquet-frame">
+                    <div class="polaroid">
+                        <img src="images/bouquet.jpg" alt="بوكيه ورد" onerror="this.src='https://placehold.co/400x400/fce4ec/e8a9b4?text=🌹+Bouquet+🌹'">
+                    </div>
+                    <div class="tape-sticker"></div>
+                </div>
+                <div style="margin: 1rem 0 0.5rem; font-size:1rem; color:#b95772;">لأنكِ تستحقين وردًا وحكاية 💗</div>
+                <button class="btn-surprise" id="openSurpriseBtn">✨ افتتح المفاجأة ✨</button>
+            </div>
+        </div>
+
+        <!-- الصفحات 2 إلى 8 : نقاط وزينة scrapbook -->
+        <div class="page-content" id="page1"><div class="page-number">❁ ٢ ❁</div><div class="three-dots">...</div><div class="sticker" style="bottom:10px; left:10px;">🌸</div><div class="tape" style="bottom:20px; right:15px; width:45px;"></div></div>
+        <div class="page-content" id="page2"><div class="page-number">❁ ٣ ❁</div><div class="three-dots">...</div><div class="sticker" style="top:30%; right:5px;">💖</div></div>
+        <div class="page-content" id="page3"><div class="page-number">❁ ٤ ❁</div><div class="three-dots">...</div><div class="sticker" style="bottom:40px; left:20px;">🎀</div></div>
+        <div class="page-content" id="page4"><div class="page-number">❁ ٥ ❁</div><div class="three-dots">...</div><div class="tape" style="top:25%; left:10px;"></div></div>
+        <div class="page-content" id="page5"><div class="page-number">❁ ٦ ❁</div><div class="three-dots">...</div><div class="sticker" style="top:60%; right:0;">🌷</div></div>
+        <div class="page-content" id="page6"><div class="page-number">❁ ٧ ❁</div><div class="three-dots">...</div><div class="tape" style="bottom:10%; left:20%;"></div></div>
+        <div class="page-content" id="page7"><div class="page-number">❁ ٨ ❁</div><div class="three-dots">...</div><div class="sticker" style="top:15%; left:5%;">✨</div></div>
+
+        <!-- الصفحة 9: End ❤️ -->
+        <div class="page-content" id="page8">
+            <div class="page-number">❁ النهاية ❁</div>
+            <div class="end-section">
+                <div style="font-size: 3.5rem;">❤️</div>
+                <div style="font-size: 2rem; font-weight: bold; color: #c2778a;">End</div>
+                <div style="margin-top: 1rem; color:#b55b78;">تمت الرحلة بحب كبير 🤍</div>
+                <div class="polaroid" style="margin-top: 1.5rem; width:80%;">
+                    <img src="images/us.jpg" onerror="this.src='https://placehold.co/300x300/f2d5e0/e8a9b4?text=🤍'" style="max-width:100%">
+                    <div class="tape-top" style="top:-8px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- عناصر التحكم -->
+    <div class="dot-nav" id="dotNav"></div>
+    <div class="nav-arrows">
+        <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-right"></i> السابق</button>
+        <button class="nav-btn" id="nextBtn">التالي <i class="fas fa-chevron-left"></i></button>
+    </div>
+</div>
+
+<div class="music-icon" id="musicToggle">
+    <i class="fas fa-music"></i>
+</div>
+
+<script>
+    (function() {
+        // ---------- إنشاء النجوم العائمة (قلوب ورد) ----------
+        function createFloatingHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = Math.random() > 0.6 ? '🌸' : '❤️';
+            heart.classList.add('floating-heart');
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.fontSize = (Math.random() * 20 + 12) + 'px';
+            heart.style.animationDuration = (Math.random() * 4 + 4) + 's';
+            heart.style.animationDelay = Math.random() * 5 + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 6000);
+        }
+        setInterval(createFloatingHeart, 1800);
+
+        // الصفحات
+        const totalPages = 9;
+        let currentPage = 0;
+        const pages = document.querySelectorAll('.page-content');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dotNav = document.getElementById('dotNav');
+        const openBtn = document.getElementById('openSurpriseBtn');
+
+        function buildDots() {
+            dotNav.innerHTML = '';
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (i === currentPage) dot.classList.add('active');
+                dot.addEventListener('click', () => goToPage(i));
+                dotNav.appendChild(dot);
+            }
+        }
+
+        function updateUI() {
+            pages.forEach((p, idx) => {
+                if (idx === currentPage) p.classList.add('active-page');
+                else p.classList.remove('active-page');
+            });
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, idx) => {
+                if (idx === currentPage) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+            document.querySelector('.page-card').scrollTop = 0;
+        }
+
+        function goToPage(idx) {
+            if (idx >= 0 && idx < totalPages) {
+                currentPage = idx;
+                updateUI();
+                // لمسة كونفيتي عند الصفحة الأخيرة
+                if (currentPage === totalPages-1) {
+                    canvasConfetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#e8a9b4', '#ffbfcf'] });
+                }
+            }
+        }
+
+        function nextPage() {
+            if (currentPage + 1 < totalPages) {
+                currentPage++;
+                updateUI();
+            } else {
+                canvasConfetti({ particleCount: 200, spread: 80, origin: { y: 0.5 }, colors: ['#f5b0c0', '#ffd9e6'] });
+            }
+        }
+        function prevPage() {
+            if (currentPage - 1 >= 0) {
+                currentPage--;
+                updateUI();
+            }
+        }
+
+        prevBtn.addEventListener('click', prevPage);
+        nextBtn.addEventListener('click', nextPage);
+
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                if (currentPage === 0) goToPage(1);
+                else goToPage(1);
+                canvasConfetti({ particleCount: 80, spread: 55, origin: { y: 0.5 }, colors: ['#e8a9b4', '#ffb7c5'] });
+            });
+        }
+
+        // سحب اللمس
+        let touchStartX = 0;
+        const cardScroller = document.querySelector('.page-card');
+        cardScroller.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].clientX;
+        });
+        cardScroller.addEventListener('touchend', (e) => {
+            const diff = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diff) > 45) {
+                if (diff > 0) prevPage();
+                else nextPage();
+            }
+        });
+
+        buildDots();
+        updateUI();
+
+        // ---------- الموسيقى المتكاملة (أيقونة دائرية) ----------
+        let audio = null;
+        let isPlaying = false;
+        const musicIcon = document.getElementById('musicToggle');
+        
+        function initAudio() {
+            if (audio) return;
+            audio = new Audio('song.mp3');
+            audio.loop = true;
+            audio.volume = 0.5;
+            audio.addEventListener('ended', () => {
+                isPlaying = false;
+                musicIcon.classList.remove('playing');
+            });
+        }
+
+        function startMusic() {
+            initAudio();
+            audio.play().then(() => {
+                isPlaying = true;
+                musicIcon.classList.add('playing');
+            }).catch(() => {
+                // fallback عند أول تفاعل
+                document.body.addEventListener('click', function once() {
+                    if (audio && !audio.paused) return;
+                    audio.play().then(() => {
+                        isPlaying = true;
+                        musicIcon.classList.add('playing');
+                    }).catch(()=>{});
+                    document.body.removeEventListener('click', once);
+                });
+            });
+        }
+
+        musicIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!audio) initAudio();
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                musicIcon.classList.remove('playing');
+            } else {
+                audio.play().then(() => {
+                    isPlaying = true;
+                    musicIcon.classList.add('playing');
+                }).catch(()=>{});
+            }
+        });
+
+        // تشغيل الموسيقى تلقائياً بعد ثانية
+        setTimeout(() => {
+            startMusic();
+        }, 1000);
+
+        // إضافة بعض الستيكرات الإضافية ديناميكياً للزينة
+        const extraStickers = ['🎀', '🌸', '💗', '🌷', '✨', '💖'];
+        for (let i = 0; i < 6; i++) {
+            let s = document.createElement('div');
+            s.className = 'sticker';
+            s.innerHTML = extraStickers[Math.floor(Math.random()*extraStickers.length)];
+            s.style.left = Math.random() * 90 + '%';
+            s.style.top = Math.random() * 80 + '%';
+            s.style.fontSize = (Math.random() * 16 + 14) + 'px';
+            s.style.opacity = '0.25';
+            document.querySelector('.page-card').appendChild(s);
+        }
+    })();
+</script>
+</body>
+</html>
