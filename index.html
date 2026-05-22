@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>مانونتي | هدية من إسراء</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(ellipse at 40% 40%, #3d1a24, #1a0a10);
+            font-family: 'Tajawal', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Stars */
+        .star-field {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: #ffe0f0;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #ffb7c5;
+            animation: twinkle 3s infinite alternate;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8);}
+            100% { opacity: 0.8; transform: scale(1.2);}
+        }
+
+        /* Book Container */
+        .book-wrapper {
+            position: relative;
+            width: min(94vw, 550px);
+            height: min(86vh, 700px);
+            perspective: 1800px;
+            z-index: 20;
+        }
+        .book {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transform: rotateY(-4deg) rotateX(2deg);
+            transition: transform 0.3s ease;
+        }
+        .book:hover {
+            transform: rotateY(-2deg) rotateX(1deg);
+        }
+
+        /* Spine */
+        .spine {
+            position: absolute;
+            right: -18px;
+            top: 0;
+            width: 18px;
+            height: 100%;
+            background: linear-gradient(135deg, #a14762, #6e2c46);
+            transform: rotateY(90deg) translateZ(-9px);
+            transform-origin: right center;
+            border-radius: 4px 2px 2px 4px;
+            box-shadow: inset -2px 0 8px rgba(0,0,0,0.4);
+        }
+        .back-cover {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(145deg, #732c48, #3f1525);
+            border-radius: 8px 4px 4px 8px;
+            transform: translateZ(-6px);
+            box-shadow: inset 0 0 0 1px rgba(255,200,180,0.2);
+        }
+
+        /* Pages */
+        .pages {
+            position: absolute;
+            inset: 0;
+            background: #fff8f2;
+            border-radius: 6px 12px 12px 6px;
+            overflow: hidden;
+            box-shadow: inset -4px 0 18px rgba(0,0,0,0.04), inset 6px 0 10px rgba(0,0,0,0.02);
+        }
+        .page-scroll {
+            height: 100%;
+            overflow-y: auto;
+            padding: 1.8rem 1.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: #e8a9b4 #ffe0ec;
+        }
+        .page-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .page-scroll::-webkit-scrollbar-track {
+            background: #ffe0ec;
+            border-radius: 10px;
+        }
+        .page-scroll::-webkit-scrollbar-thumb {
+            background: #e8a9b4;
+            border-radius: 10px;
+        }
+
+        /* Navigation buttons */
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 200;
+        }
+        .nav-btn {
+            background: rgba(232, 169, 180, 0.2);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(232, 169, 180, 0.6);
+            border-radius: 40px;
+            padding: 8px 22px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #ffecf0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: #e8a9b4;
+            color: #2c0f18;
+            border-color: white;
+        }
+
+        /* Dot indicators */
+        .dots {
+            position: fixed;
+            bottom: 85px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            z-index: 200;
+        }
+        .dot {
+            width: 7px;
+            height: 7px;
+            background: #e8a9b4;
+            border-radius: 50%;
+            opacity: 0.4;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .dot.active {
+            width: 22px;
+            border-radius: 10px;
+            opacity: 1;
+            background: #f7c5d2;
+        }
+
+        /* Typography & content */
+        .page-number {
+            font-family: 'Amiri', serif;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #d49aae;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+        }
+        .welcome-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(135deg, #e8a9b4, #c2778a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0.5rem 0;
+        }
+        .bouquet-img {
+            width: 70%;
+            max-width: 220px;
+            margin: 1rem auto;
+            display: block;
+            border-radius: 50px;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.15);
+            border: 3px solid #f3cdd6;
+        }
+        .poem-text {
+            text-align: center;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #8b4a5e;
+            font-weight: 500;
+            background: rgba(232,169,180,0.1);
+            padding: 0.8rem;
+            border-radius: 30px;
+            margin: 1rem 0;
+        }
+        .surprise-btn {
+            background: linear-gradient(105deg, #e8a9b4, #c2778a);
+            border: none;
+            border-radius: 50px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            display: block;
+            margin: 1.5rem auto 0;
+            cursor: pointer;
+            width: fit-content;
+            box-shadow: 0 5px 12px rgba(194,119,138,0.4);
+            transition: 0.2s;
+        }
+        .surprise-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(194,119,138,0.6);
+        }
+
+        /* Letter frame */
+        .letter-frame {
+            background: #fffef7;
+            border-radius: 28px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05), inset 0 0 0 2px #fbe6ee, inset 0 0 0 6px #fff0f5;
+            margin: 1rem 0;
+            font-family: 'Amiri', serif;
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #4e2d38;
+        }
+
+        /* Slideshow items (vertical list) */
+        .slideshow-item {
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: rgba(232,169,180,0.08);
+            border-radius: 28px;
+            padding: 1rem;
+        }
+        .slideshow-img {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 24px;
+            border: 2px solid #e8a9b4;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+        }
+        .slideshow-caption {
+            font-size: 0.9rem;
+            color: #9f5e74;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Reasons list */
+        .reasons-list {
+            list-style: none;
+            padding: 0;
+        }
+        .reasons-list li {
+            background: rgba(232,169,180,0.15);
+            margin: 0.8rem 0;
+            padding: 0.7rem 1rem;
+            border-radius: 40px;
+            font-weight: 500;
+            color: #5a2e3c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .reasons-list li i {
+            color: #e8a9b4;
+            font-size: 1.2rem;
+        }
+
+        /* Gift card */
+        .gift-card {
+            background: linear-gradient(145deg, #fff3f0, #ffe5ed);
+            border-radius: 32px;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1rem 0;
+        }
+        .final-photo {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 40px;
+            margin: 1rem auto;
+            display: block;
+            border: 4px solid #e8a9b4;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+        }
+        .tiny-message {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #c2778a;
+            text-align: center;
+            margin-top: 0.6rem;
+        }
+
+        /* Page visibility */
+        .page-content {
+            display: none;
+        }
+        .page-content.active-page {
+            display: block;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .music-hint {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.5);
+            color: #ffcfdf;
+            font-size: 0.6rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            z-index: 300;
+        }
+    </style>
+</head>
+<body>
+<div class="star-field" id="starfield"></div>
+<div class="book-wrapper">
+    <div class="book">
+        <div class="spine"></div>
+        <div class="back-cover"></div>
+        <div class="pages">
+            <div class="page-scroll" id="pageScroll">
+                <!-- الصفحة 1: الترحيب -->
+                <div class="page-content active-page" id="page0">
+                    <div class="page-number">❁ ١ ❁</div>
+                    <div class="welcome-title">welcome manonty</div>
+                    <img src="images/bouquet.jpg" alt="بوكيه ورد" class="bouquet-img" onerror="this.src='https://placehold.co/400x400/fce4ec/e8a9b4?text=🌹+Bouquet+🌹'">
+                    <div class="poem-text">
+                        في ناس هديتهم ورد…<br>
+                        لكن أنتِ كان لازم…<br>
+                        ورد ومعاه حكاية 💗
+                    </div>
+                    <button class="surprise-btn" id="openSurpriseBtn">افتحي المفاجأة 🎀</button>
+                </div>
+
+                <!-- الصفحة 2: رسالة في برواز -->
+                <div class="page-content" id="page1">
+                    <div class="page-number">❁ ٢ ❁</div>
+                    <div class="letter-frame">
+                        <i class="fas fa-heart" style="color:#e8a9b4; margin-left: 5px;"></i> من إسراء إلى منه <i class="fas fa-heart" style="color:#e8a9b4; margin-right: 5px;"></i><br><br>
+                        منه الجميلة،<br>
+                        كل حرف هنا كتبته بحب كبير، لأنك أنتِ تستحقين كل شيء جميل. أنتِ لست مجرد صديقة، بل جزء من قلبي. شكراً لأنك موجودة في حياتي. 🤍
+                    </div>
+                </div>
+
+                <!-- الصفحة 3: عرض الصور (4 صور) -->
+                <div class="page-content" id="page2">
+                    <div class="page-number">❁ ٣ ❁</div>
+                    <div id="slideshowContainer"></div>
+                </div>
+
+                <!-- الصفحة 4: الحاجات اللي بحبها فيها -->
+                <div class="page-content" id="page3">
+                    <div class="page-number">❁ ٤ ❁</div>
+                    <h3 style="color:#b55b78;">💖 الحاجات اللي بحبها فيكِ 💖</h3>
+                    <ul class="reasons-list" id="reasonsList"></ul>
+                </div>
+
+                <!-- الصفحة 5: رسالة عن اليوم والهدية -->
+                <div class="page-content" id="page4">
+                    <div class="page-number">❁ ٥ ❁</div>
+                    <div class="gift-card">
+                        <i class="fas fa-calendar-alt" style="font-size: 1.5rem; color:#e8a9b4;"></i>
+                        <h3 style="margin: 0.5rem 0;">اليوم ده ♡</h3>
+                        <p>النهاردة هو يوم مختلف، يوم ما كنت أتوقع إن حد يفتكرني بالشكل الجميل ده. أنتِ هديتي الحقيقية، وكل لحظة معاكِ كنز.</p>
+                        <p style="margin-top: 1rem;">🎁 هديتي ليكي هي كل كلمة هنا، وكل ذكرى واحنا سوا. بحبك يا منه.</p>
+                    </div>
+                </div>
+
+                <!-- الصفحة 6: صورتنا سوا -->
+                <div class="page-content" id="page5">
+                    <div class="page-number">❁ ٦ ❁</div>
+                    <img src="images/us.jpg" alt="إسراء ساندة على كتف منه" class="final-photo" onerror="this.src='https://placehold.co/400x500/f2d5e0/e8a9b4?text=🤍+Our+Photo+🤍'">
+                    <div class="tiny-message">
+                        "سندتك على كتفي، وسندك على قلبي 🤍"<br>
+                        بحبك يا أحلى منه
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="dots" id="dotsContainer"></div>
+<div class="nav-buttons">
+    <button class="nav-btn" id="prevBtn"><i class="fas fa-chevron-right"></i> السابق</button>
+    <button class="nav-btn" id="nextBtn">التالي <i class="fas fa-chevron-left"></i></button>
+</div>
+<div class="music-hint" id="musicHint">🎵 الموسيقى هتشتغل تلقائياً 🤍</div>
+
+<script>
+    (function() {
+        // Starfield
+        const starContainer = document.getElementById('starfield');
+        for (let i = 0; i < 100; i++) {
+            const s = document.createElement('div');
+            s.classList.add('star');
+            s.style.width = Math.random() * 2.5 + 1 + 'px';
+            s.style.height = s.style.width;
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = Math.random() * 4 + 's';
+            s.style.animationDuration = Math.random() * 3 + 2 + 's';
+            starContainer.appendChild(s);
+        }
+
+        // بيانات الصور (4 صور) مع كابشن تحت كل صورة
+        const slideshowData = [
+            { img: "images/1.jpg", caption: "✨ أول لقاء كان سحرياً ✨" },
+            { img: "images/2.jpg", caption: "💬 ضحكات وسهر ما تخلصش 💬" },
+            { img: "images/3.jpg", caption: "🌸 أيام كان القلب فيها قريب 🌸" },
+            { img: "images/4.jpg", caption: "🎀 إنتِ أجمل مفاجأة في حياتي 🎀" }
+        ];
+
+        // أسباب الحب
+        const reasonsList = [
+            "ضحكتك اللي بتلم الدنيا",
+            "إنك فاهماني بدون كلام",
+            "قوة قلبك وطيبتك",
+            "ذكرياتنا الجميلة اللي ولا أحلى",
+            "إنك دايماً جنبي حتى لو كنا بعيد"
+        ];
+
+        // إجمالي الصفحات
+        const totalPages = 6;
+        let currentPage = 0;
+
+        // عناصر DOM
+        const pages = document.querySelectorAll('.page-content');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dotsContainer = document.getElementById('dotsContainer');
+        const openBtn = document.getElementById('openSurpriseBtn');
+        
+        // بناء عرض الصور
+        const slideshowContainer = document.getElementById('slideshowContainer');
+        function buildSlideshow() {
+            slideshowContainer.innerHTML = '';
+            slideshowData.forEach(item => {
+                const slideDiv = document.createElement('div');
+                slideDiv.classList.add('slideshow-item');
+                slideDiv.innerHTML = `
+                    <img class="slideshow-img" src="${item.img}" alt="صورة" onerror="this.src='https://placehold.co/400x400/fce4ec/e8a9b4?text=🌸'">
+                    <div class="slideshow-caption">${item.caption}</div>
+                `;
+                slideshowContainer.appendChild(slideDiv);
+            });
+        }
+        buildSlideshow();
+
+        // بناء قائمة الأسباب
+        const reasonsUl = document.getElementById('reasonsList');
+        reasonsList.forEach(text => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fas fa-heart"></i> ${text}`;
+            reasonsUl.appendChild(li);
+        });
+
+        // بناء النقاط السفلية
+        function buildDots() {
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                if (i === currentPage) dot.classList.add('active');
+                dot.addEventListener('click', () => goToPage(i));
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function updateUI() {
+            pages.forEach((page, idx) => {
+                if (idx === currentPage) page.classList.add('active-page');
+                else page.classList.remove('active-page');
+            });
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, idx) => {
+                if (idx === currentPage) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+            document.querySelector('.page-scroll').scrollTop = 0;
+        }
+
+        function goToPage(pageIndex) {
+            if (pageIndex >= 0 && pageIndex < totalPages) {
+                currentPage = pageIndex;
+                updateUI();
+            }
+        }
+
+        function nextPage() {
+            if (currentPage + 1 < totalPages) {
+                currentPage++;
+                updateUI();
+            } else {
+                canvasConfetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#e8a9b4', '#f5c6d6'] });
+            }
+        }
+
+        function prevPage() {
+            if (currentPage - 1 >= 0) {
+                currentPage--;
+                updateUI();
+            }
+        }
+
+        // أزرار التنقل
+        prevBtn.addEventListener('click', prevPage);
+        nextBtn.addEventListener('click', nextPage);
+
+        // زر فتح المفاجأة
+        if (openBtn) {
+            openBtn.addEventListener('click', () => {
+                if (currentPage === 0) {
+                    goToPage(1);
+                    canvasConfetti({ particleCount: 100, spread: 50, origin: { y: 0.5 }, colors: ['#e8a9b4', '#ffb7c5'] });
+                } else {
+                    goToPage(1);
+                }
+            });
+        }
+
+        // اللمس للانتقال بين الصفحات (سحب)
+        let touchStart = 0;
+        const scrollElem = document.querySelector('.page-scroll');
+        scrollElem.addEventListener('touchstart', (e) => {
+            touchStart = e.changedTouches[0].clientX;
+        });
+        scrollElem.addEventListener('touchend', (e) => {
+            const touchEnd = e.changedTouches[0].clientX;
+            const diff = touchEnd - touchStart;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) prevPage();
+                else nextPage();
+            }
+        });
+
+        buildDots();
+        updateUI();
+
+        // تشغيل الموسيقى تلقائياً عند فتح الموقع
+        let audio = null;
+        function playMusic() {
+            if (audio) return;
+            audio = new Audio('song.mp3');
+            audio.loop = true;
+            audio.volume = 0.5;
+            audio.play().then(() => {
+                console.log("Music playing");
+                const hint = document.getElementById('musicHint');
+                if (hint) hint.style.opacity = '0.5';
+            }).catch(() => {
+                // إذا منع المتصفح التشغيل التلقائي، نشغلها بأول نقرة في أي مكان
+                document.body.addEventListener('click', function once() {
+                    if (audio && !audio.paused) return;
+                    if (!audio) audio = new Audio('song.mp3');
+                    audio.loop = true;
+                    audio.volume = 0.5;
+                    audio.play().catch(e => console.log);
+                    document.body.removeEventListener('click', once);
+                });
+            });
+        }
+        // نبدأ الموسيقى بعد ثانية من تحميل الصفحة
+        setTimeout(playMusic, 1000);
+    })();
+</script>
+</body>
+</html>
