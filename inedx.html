@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>مانونتي | سكرابوك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Amiri&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #ffe6f0, #ffd9e6);
+            font-family: 'Tajawal', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+        .book {
+            max-width: 500px;
+            width: 100%;
+            background: #fffcf7;
+            border-radius: 40px;
+            height: 85vh;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .pages {
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+        .page {
+            display: none;
+            animation: fade 0.3s;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(5px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .frame {
+            background: white;
+            padding: 10px;
+            border-radius: 25px 8px 25px 8px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+            display: inline-block;
+            width: 90%;
+            margin: 10px auto;
+            text-align: center;
+        }
+        .frame img {
+            width: 100%;
+            border-radius: 18px;
+        }
+        .btn {
+            background: #e88faa;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 20px auto;
+            display: inline-block;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        .message-card {
+            background: #fffaf5;
+            border-radius: 30px;
+            padding: 25px;
+            font-family: 'Amiri', serif;
+            font-size: 1.2rem;
+            line-height: 1.8;
+            white-space: pre-line;
+            text-align: center;
+            box-shadow: inset 0 0 0 2px #fbe6ee, inset 0 0 0 5px #fff5f0;
+        }
+        .cinema-area {
+            position: relative;
+            height: 320px;
+            background: #eedde6;
+            border-radius: 35px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .cinema-slide {
+            width: 80%;
+            transition: all 0.6s ease;
+            border-radius: 20px;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .cinema-slide.small {
+            width: 35%;
+            left: 85%;
+        }
+        .cinema-caption {
+            background: rgba(0,0,0,0.7);
+            color: #fff0e6;
+            padding: 10px;
+            border-radius: 35px;
+            width: 45%;
+            position: absolute;
+            left: 8%;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: 0.3s;
+            text-align: center;
+            font-family: 'Amiri', serif;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        .cinema-caption.show {
+            opacity: 1;
+        }
+        .next-btn {
+            background: #e8a9b4;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 35px;
+            color: white;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .dots {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #c2778a;
+            border-radius: 50%;
+            opacity: 0.4;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .dot.active {
+            width: 24px;
+            border-radius: 12px;
+            opacity: 1;
+        }
+        .music {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,250,240,0.9);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .heart {
+            position: fixed;
+            pointer-events: none;
+            font-size: 1rem;
+            animation: float 5s linear forwards;
+            z-index: 200;
+        }
+        @keyframes float {
+            0% { transform: translateY(0); opacity: 0.7; }
+            100% { transform: translateY(-100vh); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="book">
+    <div class="pages" id="pages">
+        <!-- صفحة البداية -->
+        <div class="page active" id="p0">
+            <div style="text-align:center">
+                <div class="frame">
+                    <img src="images/bouquet.jpg" onerror="this.src='https://placehold.co/400x400/fce4ec/e8a9b4?text=🌹'">
+                </div>
+                <h2 style="color:#c2778a;">welcome Menna</h2>
+                <p style="color:#b95772; margin:10px 0">في ناس هديتهم ورد… لكن أنتِ كان لازم ورد ومعاه حكاية 💗</p>
+                <button class="btn" id="startBtn">✨ افتتح المفاجأة ✨</button>
+            </div>
+        </div>
+        <!-- صفحة النص الأول -->
+        <div class="page" id="p1">
+            <div class="message-card" id="msg1"></div>
+        </div>
+        <!-- صفحة النص الثاني -->
+        <div class="page" id="p2">
+            <div class="message-card" id="msg2"></div>
+        </div>
+        <!-- صفحة السينما -->
+        <div class="page" id="p3">
+            <div class="cinema-area">
+                <img class="cinema-slide" id="cinemaImg" src="images/1.jpg" onerror="this.src='https://placehold.co/300x300/fce4ec?text=1'">
+                <div class="cinema-caption" id="cinemaCap"></div>
+            </div>
+            <button class="next-btn" id="nextCinema">✨ التالي ✨</button>
+            <div id="endMessage" style="display:none; text-align:center; margin-top:15px;">❤️ انتهى العرض .. أحبك كثيراً ❤️</div>
+        </div>
+    </div>
+    <div class="dots" id="dots"></div>
+</div>
+<div class="music" id="musicBtn">🎵</div>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+<script>
+(function(){
+    // ----------------------------------- القلوب الطائرة -----------------------------------
+    setInterval(function(){
+        let heart = document.createElement('div');
+        heart.className = 'heart';
+        heart.innerHTML = Math.random() > 0.6 ? '🌸' : '❤️';
+        heart.style.left = Math.random() * 100 + '%';
+        heart.style.fontSize = (Math.random() * 18 + 10) + 'px';
+        document.body.appendChild(heart);
+        setTimeout(function(){ heart.remove(); }, 5000);
+    }, 2000);
+
+    // ----------------------------------- عناصر الصفحات -----------------------------------
+    const pages = [document.getElementById('p0'), document.getElementById('p1'), document.getElementById('p2'), document.getElementById('p3')];
+    let current = 0;
+    const dotsDiv = document.getElementById('dots');
+    const pagesContainer = document.getElementById('pages');
+
+    function updateDots() {
+        dotsDiv.innerHTML = '';
+        for(let i=0; i<pages.length; i++) {
+            let dot = document.createElement('div');
+            dot.classList.add('dot');
+            if(i === current) dot.classList.add('active');
+            dot.addEventListener('click', (function(idx){ return function(){ goToPage(idx); }; })(i));
+            dotsDiv.appendChild(dot);
+        }
+    }
+
+    function goToPage(index) {
+        if(index < 0 || index >= pages.length) return;
+        pages[current].classList.remove('active');
+        current = index;
+        pages[current].classList.add('active');
+        updateDots();
+        // تأثير تقليب بسيط
+        pagesContainer.style.transform = 'scale(0.99)';
+        setTimeout(() => pagesContainer.style.transform = '', 150);
+        // بدء الكتابة عند دخول الصفحات النصية
+        if(current === 1 && !window.typed1) { window.typed1 = true; typeWriter(document.getElementById('msg1'), text1); }
+        if(current === 2 && !window.typed2) { window.typed2 = true; typeWriter(document.getElementById('msg2'), text2); }
+        if(current === 3 && !window.cinemaStarted) { window.cinemaStarted = true; startCinema(); }
+    }
+
+    function nextPage() { if(current+1 < pages.length) goToPage(current+1); }
+    function prevPage() { if(current-1 >= 0) goToPage(current-1); }
+
+    // السحب باللمس
+    let touchX = 0;
+    pagesContainer.addEventListener('touchstart', function(e){ touchX = e.changedTouches[0].clientX; });
+    pagesContainer.addEventListener('touchend', function(e){
+        let diff = e.changedTouches[0].clientX - touchX;
+        if(Math.abs(diff) > 40) diff > 0 ? prevPage() : nextPage();
+    });
+
+    // ----------------------------------- الكتابة حرفاً حرفاً -----------------------------------
+    function typeWriter(element, text, speed=45) {
+        let i = 0;
+        element.innerHTML = '';
+        function write() {
+            if(i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(write, speed);
+            }
+        }
+        write();
+    }
+
+    const text1 = "بما أنه يوم مميز ...\nفكان لازم أعمل حاجة شبهك:\nحلوة، مختلفة، ومليانة حب 💗🌷";
+    const text2 = "يمكن الورد يذبل، والصور تفضل ذكرى…\nبس انت مكانك هيفضل ثابت في قلبي 💗🎀\nشكراً على الضحك، والهبل، وكل اللحظات الحلوة\nوربنا يديمك ليا يا احلي منونه 💗🎀";
+
+    // زر الافتتاح
+    document.getElementById('startBtn').addEventListener('click', function(){
+        goToPage(1);
+        // تشغيل الموسيقى
+        if(audio && !isPlaying) {
+            audio.play().then(()=>{ isPlaying=true; musicBtn.style.background='#e88faa'; }).catch(e=>console.log);
+        } else if(!audio) {
+            initAudio();
+            audio.play().then(()=>{ isPlaying=true; musicBtn.style.background='#e88faa'; }).catch(e=>console.log);
+        }
+        canvasConfetti({particleCount:80, spread:50, origin:{y:0.6}});
+    });
+
+    // ----------------------------------- العرض السينمائي -----------------------------------
+    let cinemaIndex = 0;
+    const imageList = [
+        'images/1.jpg', 'images/2.jpg', 'images/3.jpg', 'images/4.jpg', 'images/5.jpg',
+        'images/6.jpg', 'images/7.jpg', 'images/8.jpg', 'images/9.jpg', 'images/10.jpg'
+    ];
+    const captionList = [
+        "✨ أول لقاء كان سحرياً ✨", "💬 ضحكات وسهر ما تخلصش 💬", "🌸 أيام كان القلب فيها قريب 🌸",
+        "🎀 إنتِ أجمل مفاجأة في حياتي 🎀", "💖 ضحكتك بتلم الدنيا كلها 💖", "🌟 كل يوم معاكِ قصة حلوة 🌟",
+        "🍀 أنتِ سبب سعادتي الحقيقية 🍀", "🌹 بحبك أكتر مما تتخيلي 🌹", "💌 ذكرى جديدة في رحلتنا 💌",
+        "🤍 أنتِ الحب كله 🤍"
+    ];
+    let cinemaActive = false;
+    let cinemaTimer = null;
+    let isAnimating = false;
+    const cinemaImg = document.getElementById('cinemaImg');
+    const cinemaCap = document.getElementById('cinemaCap');
+    const nextCinemaBtn = document.getElementById('nextCinema');
+    const endMsg = document.getElementById('endMessage');
+
+    function resetCinema() {
+        if(cinemaTimer) clearTimeout(cinemaTimer);
+        cinemaIndex = 0;
+        endMsg.style.display = 'none';
+        nextCinemaBtn.style.display = 'inline-block';
+        cinemaImg.classList.remove('small');
+        cinemaImg.style.left = '50%';
+        cinemaCap.classList.remove('show');
+        cinemaImg.src = imageList[0];
+        cinemaCap.innerText = captionList[0];
+        cinemaActive = true;
+        isAnimating = false;
+        startTimer();
+    }
+
+    function startTimer() {
+        if(!cinemaActive) return;
+        cinemaTimer = setTimeout(function(){
+            if(cinemaActive && !isAnimating) startAnimation();
+        }, 2500);
+    }
+
+    function startAnimation() {
+        if(isAnimating || !cinemaActive) return;
+        isAnimating = true;
+        cinemaImg.classList.add('small');
+        cinemaImg.style.left = '85%';
+        setTimeout(function(){ cinemaCap.classList.add('show'); }, 200);
+        setTimeout(function(){
+            if(!cinemaActive) return;
+            let next = cinemaIndex + 1;
+            if(next < imageList.length) {
+                cinemaImg.src = imageList[next];
+                cinemaCap.innerText = captionList[next];
+                cinemaImg.classList.remove('small');
+                cinemaImg.style.left = '50%';
+                cinemaCap.classList.remove('show');
+                cinemaIndex = next;
+                isAnimating = false;
+                startTimer();
+            } else {
+                cinemaActive = false;
+                nextCinemaBtn.style.display = 'none';
+                endMsg.style.display = 'block';
+                canvasConfetti({particleCount:200, spread:80, origin:{y:0.6}});
+            }
+        }, 2000);
+    }
+
+    function manualNext() {
+        if(isAnimating || !cinemaActive) return;
+        if(cinemaTimer) clearTimeout(cinemaTimer);
+        if(cinemaIndex+1 < imageList.length) {
+            cinemaImg.classList.remove('small');
+            cinemaImg.style.left = '50%';
+            cinemaCap.classList.remove('show');
+            isAnimating = false;
+            cinemaIndex++;
+            cinemaImg.src = imageList[cinemaIndex];
+            cinemaCap.innerText = captionList[cinemaIndex];
+            startTimer();
+        } else {
+            cinemaActive = false;
+            nextCinemaBtn.style.display = 'none';
+            endMsg.style.display = 'block';
+            canvasConfetti({particleCount:200, spread:80, origin:{y:0.6}});
+        }
+    }
+
+    function startCinema() {
+        if(window.cinemaStarted) return;
+        window.cinemaStarted = true;
+        resetCinema();
+    }
+
+    nextCinemaBtn.addEventListener('click', manualNext);
+
+    // ----------------------------------- الموسيقى -----------------------------------
+    let audio = null;
+    let isPlaying = false;
+    const musicBtn = document.getElementById('musicBtn');
+    function initAudio() {
+        audio = new Audio('song.mp3');
+        audio.loop = true;
+        audio.volume = 0.5;
+        audio.addEventListener('ended', function(){ isPlaying=false; musicBtn.style.background=''; });
+    }
+    musicBtn.addEventListener('click', function(e){
+        e.stopPropagation();
+        if(!audio) initAudio();
+        if(isPlaying) {
+            audio.pause();
+            isPlaying = false;
+            musicBtn.style.background = '';
+        } else {
+            audio.play().then(function(){ isPlaying=true; musicBtn.style.background='#e88faa'; }).catch(function(e){ console.log(e); });
+        }
+    });
+
+    // بدء التشغيل
+    updateDots();
+    // نكتب النصوص إذا كانت الصفحة الحالية هي 1 أو 2 في حالة التحميل المباشر (لن يحدث لأن البداية صفحة 0)
+})();
+</script>
+</body>
+</html>
